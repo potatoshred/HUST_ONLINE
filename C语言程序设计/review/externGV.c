@@ -1,0 +1,2 @@
+
+int globalVar = 20;
