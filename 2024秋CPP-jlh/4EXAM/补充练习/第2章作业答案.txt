@@ -1,0 +1,245 @@
+// ch2.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
+//
+
+#include <iostream>
+#include <typeinfo>
+
+
+namespace test1 {
+    //第1题 const和指针
+    //如果给出下面的定义
+    char c = '1', *pc = 0;
+    const char cc = 'a';
+    const char* pcc = 0;
+    char* const cpc = &c;
+    const char* const cpcc = &cc;
+    char* const *pcpc;
+    char* const* const pccp = &cpc;
+
+    //则下面的赋值哪些是编译正确运行也正确的，哪些是编译报错的，哪些是编译通过但运行时报错的。请说明原因
+    void f() {
+        c = cc;                 //1     编译正确运行也正确，char = const char没有问题
+        cc = c;                 //2     编译错误，cc是const的，不能再被赋值，即不能出现在等号左边
+        pcc = &c;               //3     编译正确运行也正确，const char * = char *没有问题，pcc指针本身不是const，可以指向char或const char变量
+        pcc = &cc;              //4     编译正确运行也正确 const char * = const char *当然没问题，&cc的类型是const char *
+        pc = &c;                //5     编译正确运行也正确，&c类型为char *，char * = char *当然没问题
+        pc = &cc;               //6     编译错误，&cc类型为const char *，const char *不能赋值给char *
+        pc = pcc;               //7     编译错误，pcc类型为const char *，const char *不能赋值给char *
+        pc = cpcc;              //8     编译错误，cpcc类型为const char* const，不能赋值给char *
+        cpcc = pc;              //9     编译错误，cpcc类型为const char* const，右边的const说明cpcc是常量，不能再被赋值
+        *pc = "ABCD"[2];        //10    编译正确运行也正确，pc是char *，可以对*pc赋值
+        cc = a;                 //11    编译错误，cc是const char，不能再被赋值
+        *cpcc = *pc;            //12    编译错误，cpcc是const char * const，其指向的内容不可修改，*cpcc不能再被赋值
+        pc = *pcpc;             //13    编译通过但运行时报错，pcpc是char* const *类型二級指针。*pcpc类型是char *const（指向char，本身是const），**pcpc是char类型，char *const可以赋值给char *，编译可以通过，但是由于pcpc没有指向具体的变量（为nullptr），*pcpc会导致导致运行时报错
+        **pcpc = *pc;           //14    编译通过但运行时报错，pcpc是char* const *类型二級指针。*pcpc类型是char *const（指向char，本身是const），**pcpc是char类型，因此**pcpc可以被赋值，所以编译通过。，但是由于pcpc没有指向具体的变量（为nullptr），**pcpc会导致导致运行时报错
+        *pc = **pcpc;           //15    编译通过但运行时报错。*pc是char型，**pcpc也char型，编译可以通过，但运行时报错，原因和13一样
+        *pcc = 'b';             //16    编译错误，pcc是const char *，指向的内容不可变
+        *pcpc = 'c';            //17    编译错误，*pcpc是char * const类型的一级指针，本身是不可变的，所以不能被赋值
+        *cpcc = 'd';            //18    编译错误，cpcc指针本身是const，指向的内容也是const的，因此其指向的内容是不可被赋值的
+        *pcpc = pc;             //19    编译错误，*pcpc是char * const类型的一级指针，本身是不可变的，所以不能被赋值
+        pcpc = &cpc;            //20    编译正确运行也正确，pcpc本身不是const
+        pccp = &cpc;            //21    编译错误，pccp本身是const的，不能被赋值
+
+        /*
+            char* const *pcpc： pcpc是char* const *类型二級指针。pcpc本身不是const，*pcpc类型是char *const一级指针（指向char，本身是const），**pcpc是char类型，
+
+            char* const* const pccp：  pccp是char * const * const类型的二级指针，pccp本身是const的*pcpc类型是char *const一级指针（指向char，本身是const），**pcpc是char类型
+        */
+    }   
+}
+
+
+namespace test2 {
+
+    void f() {
+        //第2題 类型解释和typedef
+        //请解释下面语句含义
+        /*
+            下面是一个示例
+            char (*pf)(int);     
+            解释：
+                该语句声明一个函数指针pf，指向这样一个函数：参数为int，返回char
+
+            提示:
+                可以用typeid操作符打印一个标识符或表达式求值结果的类型，使用该操作符时，必须#include <typeinfo>
+                std::cout << typeid(pf).name() << std:endl;
+
+        */
+        //(1)
+        int* (*p)[4];                       //声明指针p，指向的类型为int *[4],即指向一个大小为4的数值，数组元素类型为int *指针
+        p = (int * (*)[4])malloc(4 * sizeof(int*));
+        std::cout << typeid(p).name() << std::endl;  //输出int * (*)[4]
+
+        //(2)
+        int* (*t)(int) = 0;                 //定义函数指针t，指向这样一个函数：参数为int，返回int *。指针初始化为0
+        typedef int* (*F)(int);             //定义一个类型别名F，是int * (*)(int)的类型别名，该类型为一个函数指针，指向这样一个函数：参数为int，返回int *
+        F f = t;                            //定义F类型的变量f，用函数指针t来初始化f
+
+        //(3)
+        int (*(*g)[10])(int, int) = 0;      //定义指针g，指向大小为10的数组，数组元素的类型为int (*) (int,int),即函数指针，指向这样一个函数：参数为二个int，返回int 。指针初始化为0
+        typedef int (*G[10])(int, int);     //定义类型别名G，是int (*[10])(int, int)的类型别名，含义为大小10的数组，数组元素为函数指针，指向这样一个函数：参数为二个int，返回int 
+        G *pg = g;                          //定义G类型的指针pg，用指针g来初始化
+        
+    }  
+}
+
+namespace test3 {
+    //第3题 左值引用和右值引用
+    //如果给出下面的定义
+    int i = 1024;
+    const int ci = 1024;
+    double d = 3.14;
+    int f(int x) { return x; }
+    int& g(int& x) { return x; }
+    void test() {
+        //则下面的语句哪些编译成功，哪些会编译报错，请说明原因
+        int& ri_1 = i;                          //1 编译不报错，非const左值引用用求值类型相同的左值表达式初始化
+        int& ri_2 = ci;                         //2 编译报错，ci是左值，但是类型是const int，和引用的类型int不一致
+        int& ri_3 = d;                          //3 编译报错，d是double类型，和引用类型int不一致
+        int& ri_4 = i * 2;                      //4 编译报错，i* 2是右值，不能用来初始化非const引用
+        int& ri_5;                              //5 编译报错，引用必须马上绑定到被引用对象
+        int& ri_6 = i++;                        //6 编译报错，非const左值引用不能用右值i++初始化
+        int& ri_7 = --i;                        //7 编译不报错，非const左值引用用求值类型相同的左值表达式--i初始化
+        int& ri_8 = f(i);                       //8 编译报错，非const左值引用不能用右值表达式f(i)初始化
+        int& ri_9 = g(i);                       //9 编译不报错，非const左值引用用求值结果类型相同的左值表达式g()初始化
+        
+        const int& cri_1 = i;                   //10 编译通过，const左值引用可以值类型相同的左值表达式i初始化
+        const int& cri_2 = 1;                   //11 编译通过，const左值引用可以用右值来初始化，1是右值
+        const int& cri_3 = d;                   //12 编译通过，const左值引用可以用求值结果类型不一致的表达式来初始化
+        const int& cri_4 = 3.14;                //13 编译通过，const左值引用可以用求值结果类型不一致的右值表达式来初始化
+        const int& cri_5 = f();                 //14 编译通过，const左值引用可以用右值表达式f(i)来初始化
+
+        int& &rri_1 = 1;                        //15 编译报错，不能声明引用的引用 ，注意二个&&之间是分开的
+        int& *pri;                              //16 编译报错，不能声明指向引用的指针
+        int&& rri_2 = 1;                        //17 编译不报错，rri_2是右值引用（注意二个&&没有分开），引用字面量1
+        int&& rri_3 = i;                        //18 编译报错，右值引用不能绑定到左值i
+        int&& rri_4 = f(i);                     //19 编译不报错，右值引用绑定到右值表达式f(i)
+        int&& rii_5 = rri_4;                    //20 编译报错，rri_4是右值引用，但是是左值，不能绑定到右值引用rri_5
+        int& ri_10 = rri_4;                     //21 编译不报错，非const左值引用用求值结果相同的左值表达式rri_4初始化
+    } 
+}
+
+namespace test4 {
+    //第4题
+    //如果给出如下定义
+    int a[3] = { 1,2,3 };
+    void f1(int *p){}
+    void f2(int*& pr);
+    void f3(int * const &cpr){}
+    void f4(int(&ra)[3]) {}
+    //请问下面test函数里四个调用语句是否成立，请说明原因
+    void test() {
+        f1(a);          //1 可以，a类型为int [3]，可以自动转换为int *，实参传递给形参相当于：int *p = a; 
+        f2(a);          //2 不可以，a类型为int [3]，实参传递给形参相当于int *&pr = a; pr是非const左值引用，不能用不同类型的左值来绑定
+        f3(a);          //3 可以，a类型为int [3]，实参传递给形参相当于：int * const &cpr = a; 现在cpr是const引用了，可以用不同类型的左值来初始化
+        f4(a);          //4 可以，实参传递给形参相当于int(&ra)[3] = a; ra是这样一个引用：引用了大小为3的int数组（int [3]）,因此可以绑定到a
+    }
+
+}
+
+namespace test5 {
+    //第4题
+    //如果给出如下定义
+    int f(int& x) {}
+    //则下面哪些调用语句可以编译通过，哪些不能通过
+    int i = 1;
+    int& ri = i;
+    const int j = 1;
+    const int& rj = j;
+    int&& rri = 1;
+    void test() {
+        f(i);           //可以，实参传递给形参相当于int &x = i；非const左值引用绑定到同类型左值
+        f(ri);          //可以，实参传递给形参相当于int &x = ri；非const左值引用绑定到同类型左值
+        f(j);           //不可以，实参传递给形参相当于int &x = j；非const左值引用不能绑定不同类型的左值const int
+        f(rj);          //不可以，实参传递给形参相当于int &x = rj；非const左值引用不能绑定不同类型的左值const int
+        f(rri);         //可以，实参传递给形参相当于int &x = rrj；非const左值引用绑定到同类型左值int
+    }
+}
+
+namespace test6 {
+    //第5题
+    //如果给出如下定义
+    int& f(int &x){
+        for (int y = 1; y != 1 && x < 50; x += 13, y++)  if (x > 49) { x -= 31; y -= 5; }
+        return x -= 20;
+    }
+    void test() {
+        int i = 40;
+        f(i) = 1;       //执行完test()后，i的值为1:实参传递给形参导致形参x引用了i，函数返回x的引用，即i的引用。因此对函数返回值赋值就是对i赋值
+    }
+}   //当执行完test()函数后，i的值是多少？
+
+namespace test7 {
+    //第6题
+    //如果给出如下定义
+    void swap(int x, int y) {
+        //交互xy的值
+        int temp = x;
+        x = y;
+        y = temp;
+    }
+    //那么下面的函数test()执行完后，实参ij的值是否互换？请解释原因
+    void test() {
+        int i = 0, j = 1;
+        swap(i, j);
+    }
+    //请修改swap函数，使得test()函数执行后，实参ij的值可以互换。要求不允许使用指针类型的参数
+    //下面是参考答案
+    //void swap(int &x, int &y) {
+    //    //交互xy的值
+    //    int temp = x;
+    //    x = y;
+    //    y = temp;
+    //}
+}
+
+namespace test7 {
+    //第7题
+    //请实现如下函数创建如下的不规则数组，并打印在屏幕上
+    /*
+        0 0 0 0 0 0 0
+        0 0 0 0 0 0 
+        0 0 0 0 0 
+        0 0 0 0 
+        0 0 0 
+        0 0 
+        0
+    */
+    //参数size是数组第一行的列数，后面每一行列数递减1，直到最后一行只有一个元素。
+    //由于还没有介绍cout如何格式化输出，因此可以用printf函数
+    void matrix(int size) {
+        //以下为参考答案
+        int** a = (int**)malloc(size * sizeof(int*));
+        if (a) {
+            for (int i = 0; i < size; i++) {
+                a[i] = (int*)malloc((size - i) * sizeof(int));
+                memset(a[i], 0, (size - i) * sizeof(int)); //malloc出来的内存，值是随机的，因此用memset把内存全部设为0
+            }
+
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size - i; j++) {
+                    printf("%2d ", a[i][j]);
+                }
+                printf("\n");
+            }
+            //别忘了释放内存是C++程序员的责任，这是个很痛苦的事
+            for (int i = 0; i < size; i++) {
+                free(a[i]); a[i] = 0;
+            }
+            free(a); a = 0;
+        }
+
+    }
+}
+
+
+
+
+
+int main()
+{
+    //test1::f();
+    //test2::f();
+    test7::matrix(10);
+    
+}

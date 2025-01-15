@@ -1,0 +1,154 @@
+// ch3_4.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
+//
+
+#include <iostream>
+
+/*
+    第三章作业
+*/
+namespace Test3{
+    //第1题：如下函代码是否有编译错误？如果有请说明原因
+    float g(int i ) {}
+    int g(int j) {}  //错误 无法重载仅靠返回类型区分的函数
+
+    //第2题：如下代码是否有编译错误？如果有请说明原因
+    int f(int x) {}
+    int f(int x, int y = 0){}
+    int f(int x, ...) { }
+    int test2(){ f(1,2,3); }
+    //没有编译错误
+
+    //第3题：如下代码是否有编译错误？如果有请说明原因
+    int f(int x) {}
+    int f(int x, int y = 0) {}
+    int f(int x, ...) { }
+    int test3() { f(1); } //错误：三个重载函数都和和实参1匹配，编译器无法确定到底调用哪个
+
+    //第4题：函数的get的定义能否让函数test4编译通过并正常运行？如果不行请说明原因，并修改get函数使得test4能编译通过并正常运行
+    int get(int *p, int index) {
+        return p[index];
+    }
+    
+    void test4() {
+        int a[10];
+        for (int i = 0; i < 10; i++) {
+            get(a, i) = i;  //get函数返回的不是非const引用，因此不能出现在=号左边
+        }
+    }
+    //修改方法：将get方法返回类型改为int &即可。
+
+    //第5题：给定下面二个重载的函数定义
+    void f(int* p) { std::cout << "void f(int * p)" << std::endl; }
+    void f(const int *p){ std::cout << "void f(const int * p)" << std::endl; }
+    //下面的语句1和语句2分别调用了哪个f
+    void test5() {
+        int a[2] = {1,2};
+        const int b[2] = { 1,2 };
+        f(a);   //语句1 调用void f(int* p)
+        f(b);   //语句2 调用void f(const int *p)
+    }
+
+    //第6题: 下面的代码是否可以编译通过？如果不行请说明原因
+    void print(const char* p) {}
+    void print(int i){}
+    void test6() {
+        void print(int);
+        print("Hello");  //错误。上面一条语句在test6函数作用域声明了print(int), 所以在test6函数里只能看到 void print(int)，而void print(const char* p)是不可见的
+    }
+}
+
+/*
+    第4章作业
+*/
+namespace Test4_1 {
+    //第1题：下面代码中对象a1和a2的数据成员i值分别是多少
+    //答案：都是0
+    class A {
+    public:
+        int i;
+    }a1;
+    void test1() {
+        static A a2;
+        std::cout << "a1.i = " << a1.i  << std::endl;
+        std::cout << "a2.i = " << a2.i  << std::endl;
+        //A a3;
+        //std::cout << "a3.i = " << a3.i << std::endl;
+        //如果在test1里定义A a3，是否可以打印出a3.i ？不能，编译报错:使用了未初始化的局部变量
+    }
+}
+
+namespace Test4_2 {
+    //第2题；下面的代码中语句1和语句2编译是否报错？请说明原因 
+    class A {
+        int x;
+    public:
+        A(int x):x(x) {}
+    }; 
+    A a;        //语句1 报错，A类没有默认构造函数
+    A b(1);     //语句2 不报错
+}
+
+namespace Test4_3 {
+    ////第3题；给定A类的定义
+    class A {
+        int x;
+    public:
+        A(int x) :x(x) {}
+    };
+    //请为class B添加合适的构造函数，使得下面的语句能够编译通过
+    class B {
+        const A a;
+        const A& ra;
+
+    //public: //参考答案
+    //    B():a(1),ra(a){}
+
+    } b;
+}
+
+namespace Test4_4 {
+    ////第4题；给定下面类的定义
+    class A {
+        int x;
+    public:
+        A(int x) :x(x) {}
+    };
+    class B {
+        const int i = 0;
+    };
+    //class E包含如下数据成员
+    class E {
+        A a;
+        B b;
+        //则下面class E的构造函数哪些是正确的,哪些是错误的？请说明原因
+    public:
+        E():a(1){}          //构造函数1  ok
+        E():b(){}           //构造函数2     错误：A类没有默认构造函数，必须在成员初始化列表里显示构造对象a
+        E():a(1),b() {}     //构造函数3  ok
+    };   
+}
+
+namespace Test4_5 {
+    //第5题：下面代码存在哪些编译错误，请说明原因
+    class A {
+        A() {}
+    } a;
+
+    class B {
+        int i;
+        int j;
+    public:
+        explicit B(int x, int y = 0) :i(x), j(y) {}
+    };
+    B b1;
+    B b2 = 1; //编译错误。 B的构造函数是explicit的，所以不支持隐式自动转换构造
+}
+
+int main()
+{
+    //Test3::test4();
+    //Test3::test5();
+    //Test4_1::test1();
+    std::cout << "Hello World!\n";
+}
+
