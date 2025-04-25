@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="All Test Suite">
+    <test verbose="2" preserve-order="true" name="D:/IdeaWorkspace/TestNGDemo/test/homework/ch11_13/PersonTest.java">
+        <classes>
+            <class name="homework.ch11_13.PersonTest">
+                <methods>
+                    <include name="testGetName"/>
+                    <include name="testSetName"/>
+                    <include name="testGetAge"/>
+                    <include name="testSetAge"/>
+                    <include name="testTestToString"/>
+                    <include name="testTestEquals"/>
+                    <include name="testTestClone"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+    <test verbose="2" preserve-order="true" name="D:/IdeaWorkspace/TestNGDemo/test/homework/ch11_13/StudentTest.java">
+        <classes>
+            <class name="homework.ch11_13.StudentTest">
+                <methods>
+                    <include name="testGetStudentId"/>
+                    <include name="testSetStudentId"/>
+                    <include name="testGetDepartment"/>
+                    <include name="testSetDepartment"/>
+                    <include name="testGetClassNo"/>
+                    <include name="testSetClassNo"/>
+                    <include name="testTestToString"/>
+                    <include name="testTestEquals"/>
+                    <include name="testTestClone"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+    <test verbose="2" preserve-order="true" name="D:/IdeaWorkspace/TestNGDemo/test/homework/ch11_13/FacultyTest.java">
+        <classes>
+            <class name="homework.ch11_13.FacultyTest">
+                <methods>
+                    <include name="testGetFacultyId"/>
+                    <include name="testSetFacultyId"/>
+                    <include name="testGetTitle"/>
+                    <include name="testSetTitle"/>
+                    <include name="testGetEmail"/>
+                    <include name="testSetEmail"/>
+                    <include name="testTestToString"/>
+                    <include name="testTestEquals"/>
+                    <include name="testTestClone"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+    <test verbose="2" preserve-order="true" name="D:/IdeaWorkspace/TestNGDemo/test/homework/ch11_13/CourseTest.java">
+        <classes>
+            <class name="homework.ch11_13.CourseTest">
+                <methods>
+                    <include name="testRegister"/>
+                    <include name="testGetCourseName"/>
+                    <include name="testGetStudents"/>
+                    <include name="testGetTeacher"/>
+                    <include name="testUnregister"/>
+                    <include name="testGetNumberOfStudent"/>
+                    <include name="testTestClone"/>
+                    <include name="testTestToString"/>
+                    <include name="testTestEquals"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+</suite>

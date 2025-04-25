@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="All Test Suite">
+    <test verbose="2" preserve-order="true"
+          name="D:/IdeaWorkspace/TestNGDemo/test/homework/ch11_13/CompositeComponentTest.java">
+        <classes>
+            <class name="homework.ch11_13.CompositeComponentTest">
+                <methods>
+                    <include name="testGetPrice"/>
+                    <include name="testTestToString"/>
+                    <include name="testAdd"/>
+                    <include name="testRemove"/>
+                    <include name="testCalcPrice"/>
+                    <include name="testIterator"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+    <test verbose="2" preserve-order="true"
+          name="D:/IdeaWorkspace/TestNGDemo/test/homework/ch11_13/AtomicComponentTest.java">
+        <classes>
+            <class name="homework.ch11_13.AtomicComponentTest">
+                <methods>
+                    <include name="testGetId"/>
+                    <include name="testSetId"/>
+                    <include name="testGetName"/>
+                    <include name="testSetName"/>
+                    <include name="testGetPrice"/>
+                    <include name="testSetPrice"/>
+                    <include name="testTestToString"/>
+                    <include name="testAdd"/>
+                    <include name="testRemove"/>
+                    <include name="testCalcPrice"/>
+                    <include name="testIterator"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+    <test verbose="2" preserve-order="true"
+          name="D:/IdeaWorkspace/TestNGDemo/test/homework/ch11_13/ComponentListTest.java">
+        <classes>
+            <class name="homework.ch11_13.ComponentListTest">
+                <methods>
+                    <include name="testHasNext"/>
+                    <include name="testNext"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+    <test verbose="2" preserve-order="true"
+          name="D:/IdeaWorkspace/TestNGDemo/test/homework/ch11_13/CompositeIteratorTest.java">
+        <classes>
+            <class name="homework.ch11_13.CompositeIteratorTest">
+                <methods>
+                    <include name="testHasNext"/>
+                    <include name="testNext"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+    <test verbose="2" preserve-order="true"
+          name="D:/IdeaWorkspace/TestNGDemo/test/homework/ch11_13/NullIteratorTest.java">
+        <classes>
+            <class name="homework.ch11_13.NullIteratorTest">
+                <methods>
+                    <include name="testHasNext"/>
+                    <include name="testNext"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+</suite>
