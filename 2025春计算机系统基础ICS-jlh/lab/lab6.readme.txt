@@ -1,0 +1,28 @@
+实验文档太老了，做的时候记得把qemu和openEuler都下载最新版，bug会少一点。
+
+复制粘贴需要装spice-guest-tools.exe
+然后在任务管理器中启动服务进程。（网上有教程，我忘了）
+
+并在命令行中用以下参数运行：
+
+qemu-system-aarch64 -m 4096 -cpu cortex-a57 -smp 4 -M virt -bios D:\openEuler\edk2-aarch64-code.fd -net nic,model=e1000 -net user -k en-us -hda D:\openEuler\openEuler-25.03-aarch64.qcow2 -serial mon:stdio -nographic  -device virtio-serial-pci -device virtserialport,chardev=spicechannel0,name=com.redhat.spice.0 -chardev spicevmc,id=spicechannel0,name=vdagent
+
+
+说明：
+-serial mon:stdio: 将串口重定向到标准输入输出。这样，虚拟机的串口输出会显示在控制台，输入也会从控制台读取。
+
+-nographic: 禁用图形界面输出。通常与-serial mon:stdio一起使用，将控制台重定向到串口。
+
+-device virtio-serial-pci: 添加一个virtio-serial设备。
+
+-device virtserialport,chardev=spicechannel0,name=com.redhat.spice.0: 在virtio-serial总线上创建一个串口设备，并将其关联到之前定义的字符设备（chardev）spicechannel0。这个串口设备的名称为com.redhat.spice.0，通常用于SPICE协议（一种远程桌面协议）的通信。
+
+-chardev spicevmc,id=spicechannel0,name=vdagent: 定义一个字符设备，类型为spicevmc（SPICE虚拟通道），id为spicechannel0，名称为vdagent。这个通道用于SPICE的客户端代理（vdagent）通信，提供剪贴板共享、调整分辨率等功能。
+
+
+vi/vim简单配置：
+      1 set expandtab
+      2 set tabstop=4
+      3 set shiftwidth=4
+      4 set softtabstop=4
+      5 set number
