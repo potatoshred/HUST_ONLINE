@@ -1,0 +1,64 @@
+-- 1
+CREATE DATABASE IF NOT EXISTS beijing2022;
+
+
+-- 2
+CREATE DATABASE IF NOT EXISTS TestDb;
+USE TestDb;
+CREATE TABLE IF NOT EXISTS t_emp(
+    id INT PRIMARY KEY,
+    name VARCHAR(32),
+    deptId INT,
+    salary FLOAT
+);
+
+-- 3
+CREATE DATABASE IF NOT EXISTS MyDb;
+USE MyDb;
+CREATE TABLE IF NOT EXISTS dept(
+    deptNo INT PRIMARY KEY,
+    deptName VARCHAR(32)
+);
+CREATE TABLE IF NOT EXISTS staff(
+    staffNo INT PRIMARY KEY,
+    staffName VARCHAR(32),
+    gender CHAR(1),
+    dob date,
+    salary numeric(8,2),
+    deptNo INT,
+    CONSTRAINT FK_staff_deptNo FOREIGN KEY(deptNo) REFERENCES dept(deptNo)
+);
+
+-- 4
+CREATE DATABASE IF NOT EXISTS MyDb;
+USE MyDb;
+
+CREATE TABLE IF NOT EXISTS products(
+    pid CHAR(10) PRIMARY KEY,
+    name VARCHAR(32),
+    brand CHAR(10) CONSTRAINT CK_products_brand CHECK(brand in ('A', 'B')),
+    price INT CONSTRAINT CK_products_price CHECK(price>0)
+);
+
+
+-- 5
+CREATE DATABASE IF NOT EXISTS MyDb;
+USE MyDb;
+DROP TABLE IF EXISTS hr;
+
+CREATE TABLE IF NOT EXISTS hr(
+    id CHAR(10) PRIMARY KEY,
+    name VARCHAR(32) NOT NULL,
+    mz CHAR(16) DEFAULT "汉族"
+);
+
+-- 6
+CREATE DATABASE IF NOT EXISTS MyDb;
+USE MyDb;
+DROP TABLE IF EXISTS s;
+
+CREATE TABLE IF NOT EXISTS s(
+    sno CHAR(10) PRIMARY KEY,
+    name VARCHAR(32) NOT NULL,
+    ID CHAR(18) UNIQUE
+);
