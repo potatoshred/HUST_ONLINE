@@ -7,7 +7,7 @@
 #define Weight_Increment 1.0
 #define Weight_Update 1000
 #define DECISION_MARK 0
-#define TIME_LIMIT 30 // 30 seconds
+#define TIME_LIMIT 3 // 8 seconds
 
 #define TRUE 1
 #define FALSE 0
@@ -39,6 +39,7 @@ int elapse_time;                  // 运行时间
 bool is_sudoku = false; // 是否为数独
 bool is_sudoku_gui = true; 
 bool IS_SAT = false; 
+bool enableTLE = true; 
 int board_given = 28;
 int board[9][9] = {0}; // 数独
 int board_ans[9][9] = {0}; // 数独

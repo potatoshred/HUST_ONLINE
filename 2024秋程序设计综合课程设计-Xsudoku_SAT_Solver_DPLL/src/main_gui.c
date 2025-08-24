@@ -25,6 +25,7 @@ Rectangle rectButtonNew = {PADDING, 20, 100, 50};
 Rectangle rectButtonSolve = {PADDING + 120, 20, 100, 50};
 Rectangle rectButtonAns = {PADDING + 240, 20, 100, 50};
 Rectangle rectButtonReset = {PADDING + 360, 20, 100, 50};
+Rectangle rectButtonTLE = {PADDING, PADDING + CELL_SIZE *SIZE + 30, 100, 80};
 Rectangle rectButtonSAT = {PADDING + 120, PADDING + CELL_SIZE *SIZE + 20, 200, 100};
 Color colorButtonLoad = (Color){100, 200, 100, 255};
 
@@ -32,7 +33,6 @@ Vector2 mousePosition;
 FilePathList droppedFiles;
 char inputSudokuFilePath[256] = "";
 int droppedFileCount = 0;
-
 
 float easeInOut(float t, float start, float end)
 {
@@ -130,7 +130,7 @@ void DrawBoard()
                 int tmp = board[row][col]; // 临时变量
                 board[row][col] = 0;
 
-                if (Fillable(board, row, col, tmp)) { // 填入数字合法
+                if (Fillable(board, row, col, tmp)) {                    // 填入数字合法
                     DrawRectangleRec(cell, (Color){168, 233, 168, 255}); // 将该格子标记为绿色
                 }
                 board[row][col] = tmp;
@@ -266,6 +266,8 @@ void UpdateSelection()
                     }
                 }
             }
+        } else if (CheckCollisionPointRec(mousePosition, rectButtonTLE)) {
+            enableTLE = !enableTLE;
         }
     }
 }
@@ -279,8 +281,8 @@ void DrawDisc(int centerX, int centerY)
 
         Color color = (num % 2 == 0) ? (Color){173, 216, 230, 255} : (Color){220, 228, 235, 255};
         DrawCircle(x, y, 20 * discScale, color); // 绘制色块
-
-        DrawText(TextFormat("%d", num), x - 10 * discScale, y - 10 * discScale, 20 * discScale, BLACK);
+        if (num!=0)
+            DrawText(TextFormat("%d", num), x - 10 * discScale, y - 10 * discScale, 20 * discScale, BLACK);
     }
 }
 
@@ -342,6 +344,7 @@ int main(void)
         UpdateSelection();
 
         DrawButton(rectButtonNew, (Color){100, 200, 255, 255}, "NEW");
+        DrawButton(rectButtonTLE, enableTLE?(Color){100, 200, 255, 255}:(Color){255, 255, 255, 255}, enableTLE?"enable\n\ntimeout":"disable\n\ntimeout");
         DrawButton(rectButtonSolve, colorButtonLoad, "Solve");
         DrawButton(rectButtonAns, (Color){100, 100, 255, 255}, "ANSWER");
         DrawButton(rectButtonReset, BLACK, "RESET");

@@ -6,6 +6,7 @@
 #include <time.h>
 
 #ifdef _WIN32
+extern __declspec(dllimport) int __stdcall MessageBoxA(void*, const char*, const char*, unsigned);
 #include <direct.h> // For _getcwd on Windows
 #define getcwd _getcwd
 #else
@@ -43,6 +44,7 @@ void Create_CNF_From_File(const char *filename)
     // p行 "cnf num_vars num_clauses"
     char _cnf[4]; // 临时变量
     fscanf(cnf, "%s %d %d", _cnf, &num_vars, &num_clauses);
+    printf("num_vars=%d, num_clauses=%d\n", num_vars, num_clauses);
 
     clauses = (IntVector *)malloc(num_clauses * sizeof(IntVector));  // 根据子句数量，指定子句集大小
     clause_mask = (int *)calloc(num_clauses, sizeof(int));           // 子句确定标志初始化为0
@@ -370,6 +372,7 @@ void Verify()
 bool IsPropagateToConflict()
 {
     while (idx_next_literal <= backtrack_stack.top) {
+
         int literal_p = backtrack_stack.data[idx_next_literal];
         idx_next_literal++; // 记录下一次字面的位置
 
@@ -409,15 +412,24 @@ bool IsPropagateToConflict()
 void DPLL()
 {
     while (true) { // 模拟递归调用， 用回溯栈记录决策路径，
+        // 超时检测
+        if (enableTLE && ((clock() - start_time) / CLOCKS_PER_SEC) > TIME_LIMIT) {
+            MessageBoxA(NULL, "Time Limit Exceed, early stop to avoid system no response", "TLE", 0x00000000L | 0x00000030L);
+            return Exit_With_Stat(false);
+        }
         // debug
         // printf("%16s", "next: ");
         // debug_IntStack(&backtrack_stack);
+
 
         while (IsPropagateToConflict()) { // conflict-driven back jumping
 
             // // debug
             // printf("%16s", "conflict: ");
             // debug_IntStack(&backtrack_stack);
+            if (((clock() - start_time) / CLOCKS_PER_SEC) > TIME_LIMIT) {
+                return Exit_With_Stat(false); // 超时，判为无解或超时退出
+            }
 
             if (decision_level == 0) { // 如果未作任何决策就遇到冲突，，
                 if (is_sudoku_gui) {
