@@ -53,15 +53,30 @@ bool Conflict_Block(int board[9][9], int startRow, int startCol, int num)
     return false;
 }
 
-bool Conflict_Cross(int board[9][9], int row, int col, int num)
+int Conflict_Cross(int board[9][9], int row, int col, int num)
 {
-    if (row + col == 8) { // 反对角线
+    if(row == col && row == 4){
         for (int i_row = 0; i_row < 9; i_row++) {
             if (i_row == row) { // 跳过本行
                 continue;
             }
             if (board[i_row][8 - i_row] == num) {
-                return true;
+                return '/';
+            }
+            if (board[i_row][i_row] == num) {
+                return '\\';
+            }
+        }
+
+        return false;
+    }
+    else if (row + col == 8) { // 反对角线
+        for (int i_row = 0; i_row < 9; i_row++) {
+            if (i_row == row) { // 跳过本行
+                continue;
+            }
+            if (board[i_row][8 - i_row] == num) {
+                return '/';
             }
         }
         return false;
@@ -71,7 +86,7 @@ bool Conflict_Cross(int board[9][9], int row, int col, int num)
                 continue;
             }
             if (board[i_row][i_row] == num) {
-                return true;
+                return '\\';
             }
         }
         return false;

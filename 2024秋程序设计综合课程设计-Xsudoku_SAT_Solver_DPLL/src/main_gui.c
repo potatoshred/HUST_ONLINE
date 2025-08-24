@@ -333,7 +333,7 @@ int main(void)
     InitWindow(640, 700, "Sudoku Game");
     SetTargetFPS(60);
     
-
+    is_sudoku = true;
     Generate_XSudoku_And_Answer(board, board_given, board_ans);
     UpdateBoardMask();
 
