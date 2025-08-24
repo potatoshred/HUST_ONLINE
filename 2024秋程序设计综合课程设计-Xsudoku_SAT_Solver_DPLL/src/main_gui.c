@@ -33,27 +33,9 @@ FilePathList droppedFiles;
 char inputSudokuFilePath[256] = "";
 int droppedFileCount = 0;
 
-// char* OpenFileDialog() {
-//     static char filename[MAX_PATH] = "";
 
-//     OPENFILENAME ofn;       // 文件选择对话框结构
-//     ZeroMemory(&ofn, sizeof(ofn));
-//     ofn.lStructSize = sizeof(ofn);
-//     ofn.hwndOwner = NULL;  // 窗口句柄
-//     ofn.lpstrFile = filename;
-//     ofn.nMaxFile = sizeof(filename);
-//     ofn.lpstrFilter = "所有文件 (*.*)\0*.*\0文本文件 (*.txt)\0*.txt\0";
-//     ofn.lpstrTitle = "选择一个文件";
-//     ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-
-//     if (GetOpenFileName(&ofn)) {
-//         return filename; // 返回选择的文件名
-//     }
-//     return NULL; // 没有选择文件
-// }
-
-
-float easeInOut(float t, float start, float end) {
+float easeInOut(float t, float start, float end)
+{
     float div = 2.0;
     t /= (end - start) / div;
     if (t < 1) {
@@ -62,7 +44,6 @@ float easeInOut(float t, float start, float end) {
     t--;
     return start + (end - start) / div * (t * t * t + 2);
 }
-
 
 void UpdateBoardMask()
 {
@@ -81,7 +62,7 @@ void UpdateBoardMask()
 void AssignDragDropFiles()
 {
     if (IsFileDropped()) {
-        
+
         mousePosition = GetMousePosition();
         droppedFiles = LoadDroppedFiles();
         droppedFileCount = droppedFiles.count;
@@ -95,10 +76,9 @@ void AssignDragDropFiles()
 
             Read_Board_From_File(inputSudokuFilePath);
             UpdateBoardMask();
-
         }
         if (droppedFileCount && CheckCollisionPointRec(mousePosition, rectButtonSAT)) {
-            
+
             strcpy(inputSudokuFilePath, droppedFiles.paths[0]);
 
             is_sudoku = false;
@@ -150,6 +130,30 @@ void DrawBoard()
                 int tmp = board[row][col]; // 临时变量
                 board[row][col] = 0;
 
+                if (Fillable(board, row, col, tmp)) { // 填入数字合法
+                    DrawRectangleRec(cell, (Color){168, 233, 168, 255}); // 将该格子标记为绿色
+                }
+                board[row][col] = tmp;
+            }
+            if (selectedRow == row && selectedCol == col) {
+                DrawRectangleRec(cell, (Color){0, 200, 255, 255});
+            }
+            DrawRectangleLines(cell.x, cell.y, cell.width, cell.height, BLACK);
+        }
+    }
+}
+void DrawConflict()
+{
+    for (int row = 0; row < SIZE; row++) {
+        for (int col = 0; col < SIZE; col++) {
+
+            Rectangle cell = {PADDING + col * CELL_SIZE, PADDING + row * CELL_SIZE, CELL_SIZE, CELL_SIZE};
+
+            if (board_mask[row][col] == 0 && board[row][col] != 0) { // 填入数字的格子
+
+                int tmp = board[row][col]; // 临时变量
+                board[row][col] = 0;
+
                 if (!Fillable(board, row, col, tmp)) { // 冲突
 
                     if (Conflict_Row(board, row, tmp)) { // 行冲突
@@ -190,18 +194,10 @@ void DrawBoard()
                                    (Vector2){PADDING + SIZE * CELL_SIZE, PADDING + SIZE * CELL_SIZE},
                                    4, RED);
                     }
-
                     DrawRectangleRec(cell, (Color){255, 100, 100, 255}); // 将该格子标记为红色
-                } else {                                                 // 填入数字合法
-                    DrawRectangleRec(cell, (Color){168, 233, 168, 255}); // 将该格子标记为绿色
                 }
                 board[row][col] = tmp;
             }
-            if (selectedRow == row && selectedCol == col) {
-                DrawRectangleRec(cell, (Color){0, 200, 255, 255});
-            }
-            DrawRectangleLines(cell.x, cell.y, cell.width, cell.height, BLACK);
-
             if (board[row][col] != 0) {
                 DrawText(TextFormat("%d", board[row][col]),
                          cell.x + CELL_SIZE / 4,
@@ -210,14 +206,12 @@ void DrawBoard()
             }
         }
     }
-
     for (int i = 1; i < 3; i++) {
         int linePosition = PADDING + i * CELL_SIZE * 3;
         DrawLineEx((Vector2){PADDING, linePosition}, (Vector2){PADDING + SIZE * CELL_SIZE, linePosition}, 5.0f, BLACK);
         DrawLineEx((Vector2){linePosition, PADDING}, (Vector2){linePosition, PADDING + SIZE * CELL_SIZE}, 5.0f, BLACK);
     }
 }
-
 void UpdateSelection()
 {
 
@@ -332,7 +326,7 @@ int main(void)
     // 调整窗口大小
     InitWindow(640, 700, "Sudoku Game");
     SetTargetFPS(60);
-    
+
     is_sudoku = true;
     Generate_XSudoku_And_Answer(board, board_given, board_ans);
     UpdateBoardMask();
@@ -354,7 +348,7 @@ int main(void)
         DrawButton(rectButtonSAT, (Color){100, 200, 255, 255}, "SAT SOLVER\n\n(drop .cnf here)");
 
         DrawBoard();
-
+        DrawConflict();
         if (discVisible) {
             // 计算圆盘中心位置
             int centerX = PADDING + (selectedCol * CELL_SIZE) + (CELL_SIZE / 2);
