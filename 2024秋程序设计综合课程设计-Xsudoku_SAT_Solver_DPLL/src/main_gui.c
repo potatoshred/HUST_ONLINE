@@ -1,6 +1,15 @@
 
 #include "raylib.h"
 #include <math.h>
+#ifdef _WIN32
+extern __declspec(dllimport) int __stdcall MessageBoxA(void *, const char *, const char *, unsigned);
+#ifndef MB_OK
+#define MB_OK 0x00000000L
+#endif
+#ifndef MB_ICONWARNING
+#define MB_ICONWARNING 0x00000030L
+#endif
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -68,32 +77,62 @@ void AssignDragDropFiles()
         droppedFileCount = droppedFiles.count;
 
         if (droppedFileCount && CheckCollisionPointRec(mousePosition, rectButtonNew)) {
-            colorButtonLoad = GREEN; // 高亮显示区域
-            strcpy(inputSudokuFilePath, droppedFiles.paths[0]);
+            // 检查路径是否包含非ASCII字符
+            int hasNonAscii = 0;
+            for (const char *p = droppedFiles.paths[0]; *p; ++p) {
+                if ((unsigned char)(*p) > 127) {
+                    hasNonAscii = 1;
+                    break;
+                }
+            }
 
-            is_sudoku = true;
-            is_sudoku_gui = true;
+            // printf("hasNonAscii=%d\n", hasNonAscii);
+            if (hasNonAscii) {
+                /* 仅在此处包含windows.h，避免全局命名冲突 */
+                MessageBoxA(NULL, "File path contains NonAscii characters!", "ERROR", MB_OK | MB_ICONWARNING);
+            } else {
+                colorButtonLoad = GREEN; // 高亮显示区域
+                strcpy(inputSudokuFilePath, droppedFiles.paths[0]);
 
-            Read_Board_From_File(inputSudokuFilePath);
-            UpdateBoardMask();
+                is_sudoku = true;
+                is_sudoku_gui = true;
+
+                Read_Board_From_File(inputSudokuFilePath);
+                UpdateBoardMask();
+            }
         }
         if (droppedFileCount && CheckCollisionPointRec(mousePosition, rectButtonSAT)) {
+            // 检查路径是否包含非ASCII字符
+            int hasNonAscii = 0;
+            for (const char *p = droppedFiles.paths[0]; *p; ++p) {
+                if ((unsigned char)(*p) > 127) {
+                    hasNonAscii = 1;
+                    break;
+                }
+            }
 
-            strcpy(inputSudokuFilePath, droppedFiles.paths[0]);
+            // printf("hasNonAscii=%d\n", hasNonAscii);
+            if (hasNonAscii) {
+                /* 仅在此处包含windows.h，避免全局命名冲突 */
+                MessageBoxA(NULL, "File path contains NonAscii characters!", "ERROR", MB_OK | MB_ICONWARNING);
+            } else {
+                // printf("%s\n", droppedFiles.paths[0]);
+                strcpy(inputSudokuFilePath, droppedFiles.paths[0]);
 
-            is_sudoku = false;
-            is_sudoku_gui = true;
-            printf("\nReading SAT problem from file %s\n", inputSudokuFilePath);
+                is_sudoku = false;
+                is_sudoku_gui = true;
+                printf("\nReading SAT problem from file %s\n", inputSudokuFilePath);
 
-            Create_CNF_From_File(inputSudokuFilePath);
-            Init_IntStack(&backtrack_stack); // 初始化回溯栈
+                Create_CNF_From_File(inputSudokuFilePath);
+                Init_IntStack(&backtrack_stack); // 初始化回溯栈
 
-            // 记录时间(全局变量)
-            start_time = clock();
-            // 处理初始单位子句，如果有的话
-            Preprocess_Unit_Clause();
-            // 执行主DPLL过程
-            DPLL();
+                // 记录时间(全局变量)
+                start_time = clock();
+                // 处理初始单位子句，如果有的话
+                Preprocess_Unit_Clause();
+                // 执行主DPLL过程
+                DPLL();
+            }
         }
         UnloadDroppedFiles(droppedFiles);
     }
@@ -281,7 +320,7 @@ void DrawDisc(int centerX, int centerY)
 
         Color color = (num % 2 == 0) ? (Color){173, 216, 230, 255} : (Color){220, 228, 235, 255};
         DrawCircle(x, y, 20 * discScale, color); // 绘制色块
-        if (num!=0)
+        if (num != 0)
             DrawText(TextFormat("%d", num), x - 10 * discScale, y - 10 * discScale, 20 * discScale, BLACK);
     }
 }
@@ -344,7 +383,7 @@ int main(void)
         UpdateSelection();
 
         DrawButton(rectButtonNew, (Color){100, 200, 255, 255}, "NEW");
-        DrawButton(rectButtonTLE, enableTLE?(Color){100, 200, 255, 255}:(Color){255, 255, 255, 255}, enableTLE?"enable\n\ntimeout":"disable\n\ntimeout");
+        DrawButton(rectButtonTLE, enableTLE ? (Color){100, 200, 255, 255} : (Color){255, 255, 255, 255}, enableTLE ? "enable\n\ntimeout" : "disable\n\ntimeout");
         DrawButton(rectButtonSolve, colorButtonLoad, "Solve");
         DrawButton(rectButtonAns, (Color){100, 100, 255, 255}, "ANSWER");
         DrawButton(rectButtonReset, BLACK, "RESET");

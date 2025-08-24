@@ -6,7 +6,13 @@
 #include <time.h>
 
 #ifdef _WIN32
-extern __declspec(dllimport) int __stdcall MessageBoxA(void*, const char*, const char*, unsigned);
+#ifndef MB_OK
+#define MB_OK 0x00000000L
+#endif
+#ifndef MB_ICONWARNING
+#define MB_ICONWARNING 0x00000030L
+#endif
+
 #include <direct.h> // For _getcwd on Windows
 #define getcwd _getcwd
 #else
