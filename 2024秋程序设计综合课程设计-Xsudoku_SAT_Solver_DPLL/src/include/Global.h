@@ -37,8 +37,12 @@ clock_t start_time, end_time;     // 计时器
 int elapse_time;                  // 运行时间
 
 bool is_sudoku = false; // 是否为数独
+bool is_sudoku_gui = true; 
+bool IS_SAT = false; 
+int board_given = 28;
 int board[9][9] = {0}; // 数独
 int board_ans[9][9] = {0}; // 数独
+int board_mask[9][9] = {0}; // 用于记录已填入数字的位置
 
 
 int Abs(int literal);

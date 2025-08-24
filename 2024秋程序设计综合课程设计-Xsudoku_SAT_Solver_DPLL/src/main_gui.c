@@ -7,7 +7,6 @@
 #include "Global.h"
 #include "SAT.h"
 #include "Sudoku.h"
-#include "nfd.h"
 
 #define SIZE 9
 #define CELL_SIZE 50

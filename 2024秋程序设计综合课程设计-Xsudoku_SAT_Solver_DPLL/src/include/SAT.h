@@ -1,16 +1,17 @@
-#pragma warning(disable : 4996)
+#pragma once
 
-#include <cstring>
-#include <fstream>
-#include <iostream>
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
+#ifdef _WIN32
+#include <direct.h> // For _getcwd on Windows
+#define getcwd _getcwd
+#else
+#include <unistd.h> // For getcwd on POSIX systems
+#endif
 #include "Global.h"
-
-using namespace std;
 
 /**
  * @brief 取正
@@ -30,18 +31,18 @@ int Abs(int literal)
 void Create_CNF_From_File(const char *filename)
 {
     // 打开文件
-    ifstream cnf(filename);
+    FILE *cnf = fopen(filename, "r");
     // 跳过注释行
-    char c = cnf.get();
+    char c = fgetc(cnf);
     while (c == 'c') {
         while (c != '\n')
-            c = cnf.get();
-        c = cnf.get();
+            c = fgetc(cnf);
+        c = fgetc(cnf);
     }
 
     // p行 "cnf num_vars num_clauses"
-    string _cnf; // 临时变量
-    cnf >> _cnf >> num_vars >> num_clauses;
+    char _cnf[4]; // 临时变量
+    fscanf(cnf, "%s %d %d", _cnf, &num_vars, &num_clauses);
 
     clauses = (IntVector *)malloc(num_clauses * sizeof(IntVector));  // 根据子句数量，指定子句集大小
     clause_mask = (int *)calloc(num_clauses, sizeof(int));           // 子句确定标志初始化为0
@@ -61,7 +62,7 @@ void Create_CNF_From_File(const char *filename)
     // 创建子句集
     for (int clause = 0; clause < num_clauses; ++clause) {
         int literal;
-        while (cnf >> literal && literal != 0) { // 读取子句中的字面，直到遇到0
+        while (fscanf(cnf, "%d", &literal) && literal != 0) { // 读取子句中的字面，直到遇到0
             // 将字面加入所在子句
             push_back_IntVector(&clauses[clause], literal);
 
@@ -148,7 +149,11 @@ void Correct_Literal(int literal)
             if (model[Abs(literal_tmp)] == UNDEFINED) {
                 Correct_Literal(-literal_tmp);
             } else if (Eval_Literal(literal_tmp) == TRUE) {
-                Exit_With_Stat(false);
+                if (is_sudoku_gui) {
+                    return Exit_With_Stat(false);
+                } else {
+                    Exit_With_Stat(false);
+                }
             }
         }
 
@@ -161,7 +166,11 @@ void Correct_Literal(int literal)
             if (model[Abs(literal_tmp)] == UNDEFINED) {
                 Correct_Literal(-literal_tmp);
             } else if (Eval_Literal(literal_tmp) == TRUE) {
-                Exit_With_Stat(false);
+                if (is_sudoku_gui) {
+                    return Exit_With_Stat(false);
+                } else {
+                    Exit_With_Stat(false);
+                }
             }
         }
         // 排除所在列
@@ -173,7 +182,11 @@ void Correct_Literal(int literal)
             if (model[Abs(literal_tmp)] == UNDEFINED) {
                 Correct_Literal(-literal_tmp);
             } else if (Eval_Literal(literal_tmp) == TRUE) {
-                Exit_With_Stat(false);
+                if (is_sudoku_gui) {
+                    return Exit_With_Stat(false);
+                } else {
+                    Exit_With_Stat(false);
+                }
             }
         }
         // 排除所在块
@@ -188,7 +201,11 @@ void Correct_Literal(int literal)
                 if (model[Abs(literal_tmp)] == UNDEFINED) {
                     Correct_Literal(-literal_tmp);
                 } else if (Eval_Literal(literal_tmp) == TRUE) {
-                    Exit_With_Stat(false);
+                    if (is_sudoku_gui) {
+                        return Exit_With_Stat(false);
+                    } else {
+                        Exit_With_Stat(false);
+                    }
                 }
             }
         }
@@ -202,7 +219,11 @@ void Correct_Literal(int literal)
                 if (model[Abs(literal_tmp)] == UNDEFINED) {
                     Correct_Literal(-literal_tmp);
                 } else if (Eval_Literal(literal_tmp) == TRUE) {
-                    Exit_With_Stat(false);
+                    if (is_sudoku_gui) {
+                        return Exit_With_Stat(false);
+                    } else {
+                        Exit_With_Stat(false);
+                    }
                 }
             }
         }
@@ -215,7 +236,11 @@ void Correct_Literal(int literal)
                 if (model[Abs(literal_tmp)] == UNDEFINED) {
                     Correct_Literal(-literal_tmp);
                 } else if (Eval_Literal(literal_tmp) == TRUE) {
-                    Exit_With_Stat(false);
+                    if (is_sudoku_gui) {
+                        return Exit_With_Stat(false);
+                    } else {
+                        Exit_With_Stat(false);
+                    }
                 }
             }
         }
@@ -270,8 +295,10 @@ void Update_Mask(int literal, bool is_push)
 void Exit_With_Stat(bool is_sat)
 {
     end_time = clock();
-    elapse_time = ceil((end_time - start_time) * 1000 / CLOCKS_PER_SEC);
+    elapse_time = (int)(end_time - start_time) * 1000 / CLOCKS_PER_SEC;
 
+    IS_SAT = is_sat;
+    
     if (is_sat) {
 
         if (is_sudoku) {
@@ -294,64 +321,31 @@ void Exit_With_Stat(bool is_sat)
 
     Export_Solution_Res_File(is_sat);
 
-    exit(0);
+    if (!is_sudoku_gui) {
+        exit(0);
+    }
 }
 
 int Get_Next_Decision_Literal()
 {
-    if (SPLIT_STRATEGY == 0) { // 遍历找到最活跃的字面（无论正/负）
-        double max_weight = 0.0;
-        int max_weight_literal = 0;
-        for (int i = 1; i <= num_vars; ++i) {
-            // 仅处理未确定变量
-            if (model[i] == UNDEFINED) {
-                if (positive_literal_weights[i] >= max_weight) {
-                    max_weight = positive_literal_weights[i];
-                    max_weight_literal = i;
-                }
-                if (negative_literal_weights[i] >= max_weight) {
-                    max_weight = negative_literal_weights[i];
-                    max_weight_literal = -i;
-                }
+    // 遍历找到最活跃的字面（无论正/负）
+    double max_weight = 0.0;
+    int max_weight_literal = 0;
+    for (int i = 1; i <= num_vars; ++i) {
+        // 仅处理未确定变量
+        if (model[i] == UNDEFINED) {
+            if (positive_literal_weights[i] >= max_weight) {
+                max_weight = positive_literal_weights[i];
+                max_weight_literal = i;
+            }
+            if (negative_literal_weights[i] >= max_weight) {
+                max_weight = negative_literal_weights[i];
+                max_weight_literal = -i;
             }
         }
-        // 返回最活跃的变量，或如果没有未确定变量，则返回0
-        return max_weight_literal;
-    } else if (SPLIT_STRATEGY == 1) {
-        int max_appearances = 0;
-        int max_appearances_literal = 0;
-        for (int i = 1; i <= num_vars; ++i) {
-            // 仅处理未确定变量
-            if (model[i] == UNDEFINED) {
-                int positive_appearances = clauses_contain_positive[i].size;
-                int negative_appearances = clauses_contain_negative[i].size;
-                if (positive_appearances + negative_appearances > max_appearances) {
-                    max_appearances = positive_appearances + negative_appearances;
-                    max_appearances_literal = i;
-                }
-            }
-        }
-        return max_appearances_literal;
-    } else if (SPLIT_STRATEGY == 2) {
-        int nearest_literal = 0;
-        // for (int i = 1; i <= num_vars; ++i) {
-        //     if (model[i] == UNDEFINED) {
-        //         nearest_literal = i;
-        //         break;
-        //     }
-        // }
-
-        // 倒序
-
-        for (int i = num_vars; i >= 1; i--) {
-            if (model[i] == UNDEFINED) {
-                nearest_literal = i;
-                break;
-            }
-        }
-        return nearest_literal;
     }
-    return 0;
+    // 返回最活跃的变量，或如果没有未确定变量，则返回0
+    return max_weight_literal;
 }
 
 void Verify()
@@ -381,7 +375,7 @@ bool IsPropagateToConflict()
 
         IntVector clauses_p = (literal_p > 0) ? clauses_contain_negative[Abs(literal_p)] : clauses_contain_positive[Abs(literal_p)];
 
-        // 遍历当前字面为假时，所在的每个仍需判断的子句
+        // 遍历当前字面为假时，所在的每个仍需判断的子句，看看能不能找到单子句
         for (int i_clause = 0; i_clause < clauses_p.size; i_clause++) {
 
             // 跳过已确定子句
@@ -406,7 +400,7 @@ bool IsPropagateToConflict()
                 } // end of 遍历子句字面
                 Correct_Literal(trustworthy_literal); // 其余字面均为假，则将此唯一的未确定字面设为真，压入栈中
             }
-        }
+        } // end of 遍历当前字面为假时，所在的每个仍需判断的子句
     }
 
     return false; // 栈中字面均已处理，无冲突
@@ -426,7 +420,11 @@ void DPLL()
             // debug_IntStack(&backtrack_stack);
 
             if (decision_level == 0) { // 如果未作任何决策就遇到冲突，，
-                Exit_With_Stat(false); // 则证明UNSAT，退出
+                if (is_sudoku_gui) {
+                    return Exit_With_Stat(false); // 则证明UNSAT，退出
+                } else {
+                    Exit_With_Stat(false); // 则证明UNSAT，退出}
+                }
             }
 
             // 回溯到DECISION_MARK
@@ -459,8 +457,14 @@ void DPLL()
         // 当前model没有冲突，则进行下一层决策
         int literal_next = Get_Next_Decision_Literal(); // 分裂策略
 
-        if (literal_next == 0) {  // 如此，则代表所有字面均为已确定
-            Exit_With_Stat(true); // 解找到，退出
+        if (literal_next == 0) { // 如此，则代表所有字面均为已确定
+            // Exit_With_Stat(true);
+            // 解找到，退出
+            if (is_sudoku_gui) {
+                return Exit_With_Stat(true);
+            } else {
+                Exit_With_Stat(true);
+            }
         }
 
         decision_level++; // 决策等级+1
@@ -473,29 +477,15 @@ void DPLL()
 void Preprocess_Unit_Clause()
 {
     for (int i = 0; i < num_clauses; i++) {
-        // 单子句规则
         if (clauses[i].size == 1) {
             int unit_literal = clauses[i].data[0];
             if (Eval_Literal(unit_literal) == UNDEFINED) {    // 该字面未确定
                 Correct_Literal(unit_literal);                // 将字面设为真
             } else if (Eval_Literal(unit_literal) == FALSE) { // 说明出现过相反的单子句
-                Exit_With_Stat(false);
-            }
-        }
-        // 纯文字规则
-        for (int i = 1; i <= num_vars; i++) {
-            // 只出现负字面
-            if (model[i] == UNDEFINED) {
-                if (clauses_contain_positive[i].size == 0 && clauses_contain_negative[i].size > 0) {
-                    if (model[i] == UNDEFINED) {
-                        Correct_Literal(-i);
-                    }
-                }
-                // 只出现正字面
-                else if (clauses_contain_positive[i].size > 0 && clauses_contain_negative[i].size == 0) {
-                    if (model[i] == UNDEFINED) {
-                        Correct_Literal(i);
-                    }
+                if (is_sudoku_gui) {
+                    return Exit_With_Stat(false);
+                } else {
+                    Exit_With_Stat(false);
                 }
             }
         }
@@ -556,6 +546,12 @@ void Read_Board_From_String(char *str)
 
 void Read_Board_From_File(const char *filename)
 {
+    for(int i = 0; i < 9; i++) {
+        for(int j = 0; j < 9; j++) {
+            board[i][j] = 0;
+        }
+    }
+
     FILE *fp = fopen(filename, "r");
     if (fp == NULL) {
         printf("Error: cannot open file %s\n", filename);
@@ -757,7 +753,7 @@ void Answer_Board()
             if (j == 3 || j == 6) {
                 printf("| ");
             }
-            board_ans[i][j] = Eval_Cell(i, j);
+            board[i][j] = Eval_Cell(i, j);
             printf("%d ", board_ans[i][j]);
         }
         printf("\n");
@@ -786,37 +782,13 @@ void Export_Solution_Res_File(bool is_sat)
         fprintf(fp, "s 0\nv");
     }
     fprintf(fp, "\nt %d", elapse_time);
+
+    fclose(fp);
+    // 当前路径
+    printf("Solution saved to %s/solution.res\n", getcwd(NULL, 0));
 }
 
-void Add_Clause(IntVector *new_clause)
-{
-    for (int i = 0; i < (*new_clause).size; i++) {
-        int literal = (*new_clause).data[i];
-        clauses[num_clauses].data[i] = literal;
-    }
-    num_clauses++;
-}
-void Learn_From_Conflict(IntVector conflict_clause)
-{
-    IntVector *new_clause = create_IntVector();
-
-    // 找出导致冲突的字面
-    for (int i = 0; i < conflict_clause.size; i++) {
-        int literal = conflict_clause.data[i];
-        if (Eval_Literal(literal) == FALSE) {
-            // 添加其否定到新子句中
-            push_back_IntVector(new_clause, -literal);
-        }
-    }
-
-    // 如果新子句有效，则添加到子句集
-    if ((*new_clause).size > 0) {
-        // 将新子句添加到子句库
-        Add_Clause(new_clause);
-    }
-}
-
-int main(int argc, const char *argv[])
+int Solver(int argc, const char *argv[])
 {
     // parse command line options
     if (argc == 1) {
@@ -827,6 +799,7 @@ int main(int argc, const char *argv[])
 
     if (argc > 1) { // 读取SAT问题文件，并初始化其他必要的变量
         const char *filename = argv[1];
+        printf("\nReading SAT problem from file %s\n", filename);
         Create_CNF_From_File(filename);
     } else { // Sudoku
         is_sudoku = true;
