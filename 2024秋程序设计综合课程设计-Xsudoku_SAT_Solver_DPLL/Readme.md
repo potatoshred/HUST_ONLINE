@@ -72,7 +72,7 @@
 
 # 算法实现说明
 
-![1756003804415](https://file+.vscode-resource.vscode-cdn.net/d%3A/%21GH/HUST_ONLINE/2024%E7%A7%8B%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E7%BB%BC%E5%90%88%E8%AF%BE%E7%A8%8B%E8%AE%BE%E8%AE%A1-Xsudoku_SAT_Solver_DPLL/image/Readme/1756003804415.png)
+![1756003804415](./image/Readme/1756003804415.png)
 
 ## 1. 问题描述
 
